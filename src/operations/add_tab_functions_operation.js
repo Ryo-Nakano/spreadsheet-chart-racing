@@ -3,7 +3,7 @@ import { BaseOperation } from "base_classes/base_operation";
 export class AddTabFunctionsOperation extends BaseOperation {
   _operation() {
     const showChartModalOperation = this._createTabFunction({
-      name: 'モーダルを表示する',
+      name: 'ChartRacing を表示する',
       functionName: 'showChartModalOperation',
     });
     
