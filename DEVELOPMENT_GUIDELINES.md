@@ -76,6 +76,7 @@
 ## 8. Git利用方針 (Git Workflow)
 
 -   **コミットメッセージ**:
+    -   **コミットメッセージは日本語で記述してください。**
     -   変更内容が明確にわかるように記述してください。
     -   プレフィックスの利用を推奨します: `feat:`, `fix:`, `refactor:`, `docs:`, `style:`
     -   例: `feat: エラー報告機能を追加`, `docs: DEVELOPMENT_GUIDELINES.md を作成`
