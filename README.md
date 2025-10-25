@@ -34,10 +34,9 @@ This project is a Google Apps Script (GAS) program that implements an interactiv
     ```
 
 3.  **Google Apps Script プロジェクトのセットアップ (Set up Google Apps Script project):**
-    -   `clasp` をグローバルにインストールしていない場合はインストールします (`npm install -g @google/clasp`)。
     -   Google アカウントにログインします。
         ```bash
-        clasp login
+        npx clasp login
         ```
     -   スプレッドシートに紐付いた新しい GAS プロジェクトを作成します。
     -   作成したプロジェクトのスクリプトIDを `.clasp.json` ファイルに設定します。
