@@ -1,9 +1,315 @@
 <script>
 /******/ (() => { // webpackBootstrap
-/******/ 	// The require scope
-/******/ 	var __webpack_require__ = {};
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./src/ui/chart_racer.js":
+/*!*******************************!*\
+  !*** ./src/ui/chart_racer.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ChartRacer: () => (/* binding */ ChartRacer)
+/* harmony export */ });
+/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config.js */ "./src/ui/config.js");
+/* harmony import */ var _data_utils_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./data_utils.js */ "./src/ui/data_utils.js");
+
+
+
+class ChartRacer {
+  constructor() {
+    this.chart = null;
+    this.data = [];
+    this.stopped = true;
+    this.timer = null;
+    this.currentDate = _config_js__WEBPACK_IMPORTED_MODULE_0__.startDate;
+  }
+
+  async init() {
+    console.log('page loading ...');
+    const array2d = await (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.getCsvDataFromSpreadsheet)();
+    const csvText = array2d.map(row => row.join(',')).join('\n');
+    this.data = (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.parseCsvToObjects)(csvText);
+    console.log(this.data[0]); //仮
+    this._renderChart();
+  }
+
+  _renderChart() {
+    const chartOptions = {
+      debug: true,
+      width: 600,
+      type: 'horizontal column solid',
+      animation: { duration: 500 },
+      margin: { top: 0, right: 50, bottom: 0, left: 0 },
+      yAxis: { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' },
+      xAxis: { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' },
+      title: { position: 'center', label: { margin_bottom: 40, text: 'BASE FOOD 商品別販売数推移' } },
+      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate)) }, position: 'inside right' }],
+      legend: {
+        template: '%icon %name',
+        position: 'inside top right',
+        layout: 'vertical',
+        margin_top: 50,
+        customEntries: Object.keys(_config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors).map(key => ({ name: key, icon: { color: _config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors[key] } }))
+      },
+      defaultPoint: { label_text: '%id: <b>%yvalue</b>' },
+      defaultSeries: { legendEntry_visible: false, mouseTracking_enabled: false },
+      series: this._makeSeries(),
+      toolbar: {
+        defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
+        items: {
+          startLabel: { type: 'label', label_text: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate).getFullYear().toString() },
+          slider: {
+            type: 'range',
+            width: 240,
+            debounce: 200,
+            value: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate).getTime(),
+            min: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate).getTime(),
+            max: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.endDate).getTime(),
+            events_change: (val) => {
+              this._moveSlider(val);
+              this._playPause(true);
+            }
+          },
+          endLabel: { type: 'label', label_text: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.endDate).getFullYear().toString() },
+          Pause: {
+            type: 'option',
+            value: false,
+            width: 50,
+            margin: [6, 6, 6, 16],
+            icon_name: 'system/default/pause',
+            label_text: 'Pause',
+            events_change: () => {
+              this._playPause(!this.stopped);
+            }
+          }
+        }
+      }
+    };
+
+    this.chart = JSC.chart('chartDiv', chartOptions, (c) => {
+      this._playPause(false, c);
+    });
+  }
+
+  _makeSeries() {
+    const dateStr = this.currentDate;
+    const filteredData = this.data.filter(item => {
+      const value = item[dateStr];
+      const hasValidItem = item.item && item.item.trim() !== '';
+      return hasValidItem && value && value > 0;
+    });
+
+    filteredData.sort((a, b) => b[dateStr] - a[dateStr]);
+
+    return [{
+      points: filteredData.map((item, index) => ({
+        x: index,
+        id: item.item,
+        y: item[dateStr],
+        color: _config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors[item.category]
+      }))
+    }];
+  }
+
+  _moveSlider(date, cb) {
+    const dt = new Date(date);
+    this.currentDate = JSC.formatDate(new Date(dt.getFullYear(), dt.getMonth(), 1), 'yyyy/MM/dd');
+
+    this.chart.annotations('year').options({ label_text: this._formatAnnotation(dt) });
+    this.chart.uiItems('slider').options({ value: dt.getTime() });
+
+    this.chart.series(0).options({ points: this._makeSeries()[0].points }, { then: cb });
+  }
+
+  _animateChart() {
+    if (!this.stopped) {
+      this.timer = setTimeout(() => {
+        const dt = new Date(this.currentDate);
+        const newDate = dt.setMonth(dt.getMonth() + 1);
+        if (newDate >= new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.endDate).getTime()) {
+          clearTimeout(this.timer);
+          this._playPause(true);
+        } else {
+          this._moveSlider(newDate, () => this._animateChart());
+        }
+      }, _config_js__WEBPACK_IMPORTED_MODULE_0__.frameDelay);
+    }
+  }
+
+  _playPause(val, chrt) {
+    const c = chrt || this.chart;
+    if (val) {
+      if (!this.stopped) {
+        c.uiItems('Pause').options({ label_text: 'Play', icon_name: 'system/default/play' });
+        clearTimeout(this.timer);
+        this.stopped = true;
+      }
+    } else {
+      if (this.stopped) {
+        c.uiItems('Pause').options({ label_text: 'Pause', icon_name: 'system/default/pause' });
+        this.stopped = false;
+        this._animateChart();
+      }
+    }
+  }
+
+  _formatAnnotation(dt) {
+    const year = dt.getFullYear();
+    const month = dt.toLocaleString('ja-JP', { month: 'short' });
+    return (
+      `<span style="font-size:20px; font-weight:bold; width:20px; vertical-align:middle">${month}</span>` +
+      `<span style="font-size:40px; font-weight:bold; width:130px; align:right;">${year}</span><br>` +
+      `合計販売数:<br>` +
+      `<span style="font-size:24px; font-weight:bold; width:180px;margin:0 0 0 -2px">{%sum:n0}</span>`
+    );
+  }
+}
+
+
+/***/ }),
+
+/***/ "./src/ui/config.js":
+/*!**************************!*\
+  !*** ./src/ui/config.js ***!
+  \**************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   categoryColors: () => (/* binding */ categoryColors),
+/* harmony export */   endDate: () => (/* binding */ endDate),
+/* harmony export */   frameDelay: () => (/* binding */ frameDelay),
+/* harmony export */   startDate: () => (/* binding */ startDate)
+/* harmony export */ });
+// カテゴリー別の色設定（BASE FOOD商品用）
+const categoryColors = {
+  'BASE BREAD': '#ff6b6b',      // 赤系
+  'BASE Cookies': '#4ecdc4',     // 青緑系
+  'BASE PASTA': '#ffe66d',       // 黄色系
+  'BASE YAKISOBA': '#ff9f43',    // オレンジ系
+  'Others': '#95a5a6'            // グレー系
+};
+
+const startDate = '2022/01/01';
+const endDate = '2025/01/01';
+const frameDelay = 100;
+
+
+/***/ }),
+
+/***/ "./src/ui/data_utils.js":
+/*!******************************!*\
+  !*** ./src/ui/data_utils.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getCsvDataFromSpreadsheet: () => (/* binding */ getCsvDataFromSpreadsheet),
+/* harmony export */   parseCsvToObjects: () => (/* binding */ parseCsvToObjects)
+/* harmony export */ });
+/**
+ * 値を適切な型に変換する関数
+ * @param {string} value - 値（文字列）
+ * @return {any} - 適切な型に変換された値
+ */
+function parseValue(value) {
+  if (!isNaN(value)) return Number(value); // 数値
+  if (value.toLowerCase() === 'true') return true; // 真偽値
+  if (value.toLowerCase() === 'false') return false; // 真偽値
+  const date = Date.parse(value);
+  if (!isNaN(date)) return new Date(date); // 日付
+  return value; // 文字列
+}
+
+/**
+ * CSV文字列をパースし、オブジェクトの配列を返す関数
+ * @param {string} csv - CSV形式の文字列
+ * @param {string} [delimiter=','] - 区切り文字（デフォルトはカンマ）
+ * @return {Array<Object>} - オブジェクトの配列
+ */
+function parseCsvToObjects(csv, delimiter = ',') {
+  const rows = csv.trim().split('\n').filter(row => row.trim());
+  if (rows.length < 2) throw new Error('Invalid CSV: Missing data rows');
+
+  const headers = rows[0].split(delimiter).map(header => header.trim());
+  return rows.slice(1).map(row => {
+    const values = row.split(delimiter).map(value => value.trim());
+    if (values.length !== headers.length) {
+      throw new Error(`Row does not match header count: ${row}`);
+    }
+    return headers.reduce((obj, header, index) => {
+      obj[header] = parseValue(values[index]);
+      return obj;
+    }, {});
+  });
+}
+
+/**
+ * スプレッドシートからCSVデータを取得する
+ * @returns {Promise<Array<Array<string>>>}
+ */
+async function getCsvDataFromSpreadsheet() {
+  // サーバー側からデータが返ってくるのを待つために Promise でラップ
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler((data) => {
+        console.log("GASから渡ってきた値:", data[0]); // デバッグ用
+        resolve(data);
+      })
+      .withFailureHandler((error) => {
+        console.error('データの取得に失敗しました', error);
+        reject(error);
+      })
+      .getSheetDataOperation();
+  });
+}
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/global */
 /******/ 	(() => {
 /******/ 		__webpack_require__.g = (function() {
@@ -16,12 +322,37 @@
 /******/ 		})();
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /************************************************************************/
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
+(() => {
 /*!*************************!*\
   !*** ./src/ui/index.js ***!
   \*************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./chart_racer.js */ "./src/ui/chart_racer.js");
+
+
 window.addEventListener('load', () => {
-  console.log('Hello from client-side script!');
+  new _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__.ChartRacer().init();
 });
+})();
+
 /******/ })()
 ;</script>

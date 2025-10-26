@@ -1,3 +1,5 @@
+import { ChartRacer } from './chart_racer.js';
+
 window.addEventListener('load', () => {
-  console.log('Hello from client-side script!');
+  new ChartRacer().init();
 });
