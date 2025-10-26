@@ -8,9 +8,9 @@ This project is a Google Apps Script (GAS) program that implements an interactiv
 
 ## 主な機能 (Features)
 
--   スプレッドシートのデータを動的に読み込み、チャートを生成
--   モーダルダイアログ内にアニメーションチャートを表示
--   `JSCharting` ライブラリを利用した滑らかなチャートレーシング
+-   **動的なチャート生成:** スプレッドシートのデータを基に、モーダル上で動的なチャートレーシングを生成します。
+-   **簡単な操作:** カスタムメニューからワンクリックでチャートを呼び出せます。
+-   **滑らかなアニメーション:** `JSCharting`ライブラリにより、視覚的に優れたアニメーションを実現します。
 
 ## 技術スタック (Tech Stack)
 
@@ -34,10 +34,9 @@ This project is a Google Apps Script (GAS) program that implements an interactiv
     ```
 
 3.  **Google Apps Script プロジェクトのセットアップ (Set up Google Apps Script project):**
-    -   `clasp` をグローバルにインストールしていない場合はインストールします (`npm install -g @google/clasp`)。
     -   Google アカウントにログインします。
         ```bash
-        clasp login
+        npx clasp login
         ```
     -   スプレッドシートに紐付いた新しい GAS プロジェクトを作成します。
     -   作成したプロジェクトのスクリプトIDを `.clasp.json` ファイルに設定します。
