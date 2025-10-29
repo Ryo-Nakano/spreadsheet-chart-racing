@@ -6,7 +6,3 @@ export const categoryColors = {
   'BASE YAKISOBA': '#ff9f43',    // オレンジ系
   'Others': '#95a5a6'            // グレー系
 };
-
-export const startDate = '2022/01/01';
-export const endDate = '2025/01/01';
-export const frameDelay = 100;

@@ -14,25 +14,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ChartRacer: () => (/* binding */ ChartRacer)
 /* harmony export */ });
 /* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config.js */ "./src/ui/config.js");
-/* harmony import */ var _data_utils_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./data_utils.js */ "./src/ui/data_utils.js");
-
 
 
 class ChartRacer {
-  constructor() {
+  constructor(config, data) {
+    this.config = config;
+    this.data = data;
     this.chart = null;
-    this.data = [];
     this.stopped = true;
     this.timer = null;
-    this.currentDate = _config_js__WEBPACK_IMPORTED_MODULE_0__.startDate;
+    this.currentDate = this.config.startDate;
   }
 
-  async init() {
-    console.log('page loading ...');
-    const array2d = await (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.getCsvDataFromSpreadsheet)();
-    const csvText = array2d.map(row => row.join(',')).join('\n');
-    this.data = (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.parseCsvToObjects)(csvText);
-    console.log(this.data[0]); //仮
+  init() {
     this._renderChart();
   }
 
@@ -45,8 +39,8 @@ class ChartRacer {
       margin: { top: 0, right: 50, bottom: 0, left: 0 },
       yAxis: { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' },
       xAxis: { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' },
-      title: { position: 'center', label: { margin_bottom: 40, text: 'BASE FOOD 商品別販売数推移' } },
-      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate)) }, position: 'inside right' }],
+      title: { position: 'center', label: { margin_bottom: 40, text: this.config.title } },
+      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(this.config.startDate)) }, position: 'inside right' }],
       legend: {
         template: '%icon %name',
         position: 'inside top right',
@@ -60,20 +54,20 @@ class ChartRacer {
       toolbar: {
         defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
         items: {
-          startLabel: { type: 'label', label_text: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate).getFullYear().toString() },
+          startLabel: { type: 'label', label_text: new Date(this.config.startDate).getFullYear().toString() },
           slider: {
             type: 'range',
             width: 240,
             debounce: 200,
-            value: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate).getTime(),
-            min: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.startDate).getTime(),
-            max: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.endDate).getTime(),
+            value: new Date(this.config.startDate).getTime(),
+            min: new Date(this.config.startDate).getTime(),
+            max: new Date(this.config.endDate).getTime(),
             events_change: (val) => {
               this._moveSlider(val);
               this._playPause(true);
             }
           },
-          endLabel: { type: 'label', label_text: new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.endDate).getFullYear().toString() },
+          endLabel: { type: 'label', label_text: new Date(this.config.endDate).getFullYear().toString() },
           Pause: {
             type: 'option',
             value: false,
@@ -129,13 +123,13 @@ class ChartRacer {
       this.timer = setTimeout(() => {
         const dt = new Date(this.currentDate);
         const newDate = dt.setMonth(dt.getMonth() + 1);
-        if (newDate >= new Date(_config_js__WEBPACK_IMPORTED_MODULE_0__.endDate).getTime()) {
+        if (newDate >= new Date(this.config.endDate).getTime()) {
           clearTimeout(this.timer);
           this._playPause(true);
         } else {
           this._moveSlider(newDate, () => this._animateChart());
         }
-      }, _config_js__WEBPACK_IMPORTED_MODULE_0__.frameDelay);
+      }, this.config.frameDelay);
     }
   }
 
@@ -179,10 +173,7 @@ class ChartRacer {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   categoryColors: () => (/* binding */ categoryColors),
-/* harmony export */   endDate: () => (/* binding */ endDate),
-/* harmony export */   frameDelay: () => (/* binding */ frameDelay),
-/* harmony export */   startDate: () => (/* binding */ startDate)
+/* harmony export */   categoryColors: () => (/* binding */ categoryColors)
 /* harmony export */ });
 // カテゴリー別の色設定（BASE FOOD商品用）
 const categoryColors = {
@@ -192,10 +183,6 @@ const categoryColors = {
   'BASE YAKISOBA': '#ff9f43',    // オレンジ系
   'Others': '#95a5a6'            // グレー系
 };
-
-const startDate = '2022/01/01';
-const endDate = '2025/01/01';
-const frameDelay = 100;
 
 
 /***/ }),
@@ -208,7 +195,7 @@ const frameDelay = 100;
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getCsvDataFromSpreadsheet: () => (/* binding */ getCsvDataFromSpreadsheet),
+/* harmony export */   getChartInitialData: () => (/* binding */ getChartInitialData),
 /* harmony export */   parseCsvToObjects: () => (/* binding */ parseCsvToObjects)
 /* harmony export */ });
 /**
@@ -249,22 +236,23 @@ function parseCsvToObjects(csv, delimiter = ',') {
 }
 
 /**
- * スプレッドシートからCSVデータを取得する
- * @returns {Promise<Array<Array<string>>>}
+ * スプレッドシートから初期データ（シートデータと設定）を取得する
+ * @returns {Promise<{sheetData: Array<Array<string>>, config: object}>}
  */
-async function getCsvDataFromSpreadsheet() {
+async function getChartInitialData() {
   // サーバー側からデータが返ってくるのを待つために Promise でラップ
   return new Promise((resolve, reject) => {
     google.script.run
-      .withSuccessHandler((data) => {
-        console.log("GASから渡ってきた値:", data[0]); // デバッグ用
-        resolve(data);
+      .withSuccessHandler((initialData) => {
+        console.log("GASから初期データを受け取りました:", initialData);
+        resolve(initialData);
       })
       .withFailureHandler((error) => {
-        console.error('データの取得に失敗しました', error);
+        console.error('初期データの取得に失敗しました。サーバーサイドでエラーが発生しました。');
+        console.error('エラー詳細:', error); // エラーオブジェクト全体を出力
         reject(error);
       })
-      .getSheetDataOperation();
+      .getChartInitialDataOperation();
   });
 }
 
@@ -347,10 +335,31 @@ var __webpack_exports__ = {};
   \*************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./chart_racer.js */ "./src/ui/chart_racer.js");
+/* harmony import */ var _data_utils_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./data_utils.js */ "./src/ui/data_utils.js");
 
 
-window.addEventListener('load', () => {
-  new _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__.ChartRacer().init();
+
+window.addEventListener('load', async () => {
+  console.log("Fetching initial data...");
+  const initialData = await (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.getChartInitialData)();
+  console.log("Initial data received:", initialData);
+
+  // initialData とその中身を検証
+  if (!initialData || !initialData.config || !initialData.sheetData) {
+    console.error("Invalid initial data structure:", initialData);
+    return; // 処理を中断
+  }
+
+  const config = initialData.config;
+  const csvText = initialData.sheetData.map(row => row.join(',')).join('\n');
+  console.log("CSV text created:", csvText.substring(0, 100) + "..."); //長すぎないように一部だけ表示
+
+  const data = (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.parseCsvToObjects)(csvText);
+  console.log("Parsed data (first row):", data ? data[0] : null);
+
+  console.log("Initializing ChartRacer...");
+  new _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__.ChartRacer(config, data).init();
+  console.log("ChartRacer initialized.");
 });
 })();
 

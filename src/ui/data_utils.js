@@ -36,21 +36,22 @@ export function parseCsvToObjects(csv, delimiter = ',') {
 }
 
 /**
- * スプレッドシートからCSVデータを取得する
- * @returns {Promise<Array<Array<string>>>}
+ * スプレッドシートから初期データ（シートデータと設定）を取得する
+ * @returns {Promise<{sheetData: Array<Array<string>>, config: object}>}
  */
-export async function getCsvDataFromSpreadsheet() {
+export async function getChartInitialData() {
   // サーバー側からデータが返ってくるのを待つために Promise でラップ
   return new Promise((resolve, reject) => {
     google.script.run
-      .withSuccessHandler((data) => {
-        console.log("GASから渡ってきた値:", data[0]); // デバッグ用
-        resolve(data);
+      .withSuccessHandler((initialData) => {
+        console.log("GASから初期データを受け取りました:", initialData);
+        resolve(initialData);
       })
       .withFailureHandler((error) => {
-        console.error('データの取得に失敗しました', error);
+        console.error('初期データの取得に失敗しました。サーバーサイドでエラーが発生しました。');
+        console.error('エラー詳細:', error); // エラーオブジェクト全体を出力
         reject(error);
       })
-      .getSheetDataOperation();
+      .getChartInitialDataOperation();
   });
 }

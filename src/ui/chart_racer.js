@@ -1,21 +1,16 @@
-import { categoryColors, startDate, endDate, frameDelay } from './config.js';
-import { getCsvDataFromSpreadsheet, parseCsvToObjects } from './data_utils.js';
+import { categoryColors } from './config.js';
 
 export class ChartRacer {
-  constructor() {
+  constructor(config, data) {
+    this.config = config;
+    this.data = data;
     this.chart = null;
-    this.data = [];
     this.stopped = true;
     this.timer = null;
-    this.currentDate = startDate;
+    this.currentDate = this.config.startDate;
   }
 
-  async init() {
-    console.log('page loading ...');
-    const array2d = await getCsvDataFromSpreadsheet();
-    const csvText = array2d.map(row => row.join(',')).join('\n');
-    this.data = parseCsvToObjects(csvText);
-    console.log(this.data[0]); //仮
+  init() {
     this._renderChart();
   }
 
@@ -28,8 +23,8 @@ export class ChartRacer {
       margin: { top: 0, right: 50, bottom: 0, left: 0 },
       yAxis: { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' },
       xAxis: { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' },
-      title: { position: 'center', label: { margin_bottom: 40, text: 'BASE FOOD 商品別販売数推移' } },
-      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(startDate)) }, position: 'inside right' }],
+      title: { position: 'center', label: { margin_bottom: 40, text: this.config.title } },
+      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(this.config.startDate)) }, position: 'inside right' }],
       legend: {
         template: '%icon %name',
         position: 'inside top right',
@@ -43,20 +38,20 @@ export class ChartRacer {
       toolbar: {
         defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
         items: {
-          startLabel: { type: 'label', label_text: new Date(startDate).getFullYear().toString() },
+          startLabel: { type: 'label', label_text: new Date(this.config.startDate).getFullYear().toString() },
           slider: {
             type: 'range',
             width: 240,
             debounce: 200,
-            value: new Date(startDate).getTime(),
-            min: new Date(startDate).getTime(),
-            max: new Date(endDate).getTime(),
+            value: new Date(this.config.startDate).getTime(),
+            min: new Date(this.config.startDate).getTime(),
+            max: new Date(this.config.endDate).getTime(),
             events_change: (val) => {
               this._moveSlider(val);
               this._playPause(true);
             }
           },
-          endLabel: { type: 'label', label_text: new Date(endDate).getFullYear().toString() },
+          endLabel: { type: 'label', label_text: new Date(this.config.endDate).getFullYear().toString() },
           Pause: {
             type: 'option',
             value: false,
@@ -112,13 +107,13 @@ export class ChartRacer {
       this.timer = setTimeout(() => {
         const dt = new Date(this.currentDate);
         const newDate = dt.setMonth(dt.getMonth() + 1);
-        if (newDate >= new Date(endDate).getTime()) {
+        if (newDate >= new Date(this.config.endDate).getTime()) {
           clearTimeout(this.timer);
           this._playPause(true);
         } else {
           this._moveSlider(newDate, () => this._animateChart());
         }
-      }, frameDelay);
+      }, this.config.frameDelay);
     }
   }
 
