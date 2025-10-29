@@ -5,13 +5,13 @@ export class GetConfigOperation extends BaseOperation {
   _operation() {
     const sheet = this._getSheet(BOUND_SHEETS.CONFIG);
     const data = sheet.getDataRange().getValues();
-    const config = {};
-
-    data.forEach(([key, value]) => {
+    const config = data.reduce((acc, [key, value]) => {
       if (key) {
-        config[key] = value instanceof Date ? value.toISOString() : value;
+        acc[key] = value instanceof Date ? value.toISOString() : value;
       }
-    });
+      return acc;
+    }, {});
+
     return config;
   }
 }
