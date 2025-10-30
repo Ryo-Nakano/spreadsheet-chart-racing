@@ -1,5 +1,6 @@
 export const BOUND_SHEETS = {
   DATA: 'data',
+  CONFIG: 'config',
 };
 
 export const NAMED_RANGES = {
