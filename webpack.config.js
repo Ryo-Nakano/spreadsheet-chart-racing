@@ -1,14 +1,18 @@
 const path = require("path");
 const GasPlugin = require("gas-webpack-plugin");
+const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: {
+    main: './src/index.js',
+    chart: './src/ui/index.js',
+  },
   mode: "development",
   devtool: false,
 
   output: {
     path: path.join(__dirname, "dist"),
-    filename: 'main.js',
+    filename: '[name].js',
   },
 
   resolve: {
@@ -30,7 +34,16 @@ module.exports = {
 
   plugins: [
     new GasPlugin({
-      autoGlobalExportsFiles: ['**/*.js'],
+      autoGlobalExportsFiles: ['./src/index.js'],
     }),
+    new WebpackShellPluginNext({
+      onBuildEnd: {
+        scripts: [
+          'echo "<script>" > dist/chart.js.html && cat dist/chart.js >> dist/chart.js.html && echo "</script>" >> dist/chart.js.html'
+        ],
+        blocking: true,
+        parallel: false
+      }
+    })
   ],
 };

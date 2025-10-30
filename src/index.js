@@ -2,6 +2,7 @@ import { TestOperation } from "operations/test_operation";
 import { AddTabFunctionsOperation } from "operations/add_tab_functions_operation";
 import { ShowChartModalOperation } from "operations/show_chart_modal_operation";
 import { GetSheetDataOperation } from "operations/get_sheet_data_operation";
+import { GetConfigOperation } from "operations/get_config_operation";
 
 global.TEST = () => {
   const operation = new TestOperation();
@@ -23,7 +24,11 @@ global.showChartModalOperation = () => {
   operation.run();
 };
 
-global.getSheetDataOperation = () => {
-  const operation = new GetSheetDataOperation();
-  return operation.run();
+global.getChartInitialDataOperation = () => {
+  const sheetData = new GetSheetDataOperation().run();
+  const configData = new GetConfigOperation().run();
+  return {
+    sheetData: sheetData,
+    config: configData,
+  };
 };
