@@ -1,4 +1,4 @@
-import { categoryColors } from './config.js';
+import { categoryColors } from 'ui/config.js';
 
 export class ChartRacer {
   constructor(config, data) {
@@ -21,55 +21,77 @@ export class ChartRacer {
       type: 'horizontal column solid',
       animation: { duration: 500 },
       margin: { top: 0, right: 50, bottom: 0, left: 0 },
-      yAxis: { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' },
-      xAxis: { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' },
-      title: { position: 'center', label: { margin_bottom: 40, text: this.config.title } },
-      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(this.config.startDate)) }, position: 'inside right' }],
-      legend: {
-        template: '%icon %name',
-        position: 'inside top right',
-        layout: 'vertical',
-        margin_top: 50,
-        customEntries: Object.keys(categoryColors).map(key => ({ name: key, icon: { color: categoryColors[key] } }))
-      },
       defaultPoint: { label_text: '%id: <b>%yvalue</b>' },
       defaultSeries: { legendEntry_visible: false, mouseTracking_enabled: false },
       series: this._makeSeries(),
-      toolbar: {
-        defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
-        items: {
-          startLabel: { type: 'label', label_text: new Date(this.config.startDate).getFullYear().toString() },
-          slider: {
-            type: 'range',
-            width: 240,
-            debounce: 200,
-            value: new Date(this.config.startDate).getTime(),
-            min: new Date(this.config.startDate).getTime(),
-            max: new Date(this.config.endDate).getTime(),
-            events_change: (val) => {
-              this._moveSlider(val);
-              this._playPause(true);
-            }
-          },
-          endLabel: { type: 'label', label_text: new Date(this.config.endDate).getFullYear().toString() },
-          Pause: {
-            type: 'option',
-            value: false,
-            width: 50,
-            margin: [6, 6, 6, 16],
-            icon_name: 'system/default/pause',
-            label_text: 'Pause',
-            events_change: () => {
-              this._playPause(!this.stopped);
-            }
-          }
-        }
-      }
+      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(this.config.startDate)) }, position: 'inside right' }],
+
+      // 設定をメソッド呼び出しに置き換え
+      title: this._buildTitleOptions(),
+      yAxis: this._buildYAxisOptions(),
+      xAxis: this._buildXAxisOptions(),
+      legend: this._buildLegendOptions(),
+      toolbar: this._buildToolbarOptions(),
     };
 
     this.chart = JSC.chart('chartDiv', chartOptions, (c) => {
       this._playPause(false, c);
     });
+  }
+
+  _buildTitleOptions() {
+    return { position: 'center', label: { margin_bottom: 40, text: this.config.title } };
+  }
+
+  _buildYAxisOptions() {
+    return { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' };
+  }
+
+  _buildXAxisOptions() {
+    return { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' };
+  }
+
+  _buildLegendOptions() {
+    return {
+      template: '%icon %name',
+      position: 'inside top right',
+      layout: 'vertical',
+      margin_top: 50,
+      customEntries: Object.keys(categoryColors).map(key => ({ name: key, icon: { color: categoryColors[key] } }))
+    };
+  }
+
+  _buildToolbarOptions() {
+    return {
+      defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
+      items: {
+        startLabel: { type: 'label', label_text: new Date(this.config.startDate).getFullYear().toString() },
+        slider: {
+          type: 'range',
+          width: 240,
+          debounce: 200,
+          value: new Date(this.config.startDate).getTime(),
+          min: new Date(this.config.startDate).getTime(),
+          max: new Date(this.config.endDate).getTime(),
+          events_change: (val) => {
+            this._moveSlider(val);
+            this._playPause(true);
+          }
+        },
+        endLabel: { type: 'label', label_text: new Date(this.config.endDate).getFullYear().toString() },
+        Pause: {
+          type: 'option',
+          value: false,
+          width: 50,
+          margin: [6, 6, 6, 16],
+          icon_name: 'system/default/pause',
+          label_text: 'Pause',
+          events_change: () => {
+            this._playPause(!this.stopped);
+          }
+        }
+      }
+    };
   }
 
   _makeSeries() {

@@ -44,7 +44,6 @@ export async function getChartInitialData() {
   return new Promise((resolve, reject) => {
     google.script.run
       .withSuccessHandler((initialData) => {
-        console.log("GASから初期データを受け取りました:", initialData);
         resolve(initialData);
       })
       .withFailureHandler((error) => {
@@ -54,4 +53,23 @@ export async function getChartInitialData() {
       })
       .getChartInitialDataOperation();
   });
+}
+
+/**
+ * サーバーからデータを取得し、クライアントサイドで利用可能な形式に整形する
+ * @returns {Promise<{config: object, data: Array<Object>}>}
+ */
+export async function fetchAndParseChartData() {
+  const initialData = await getChartInitialData();
+  if (!initialData || !initialData.config || !initialData.sheetData) {
+    throw new Error("Invalid initial data structure from server.");
+  }
+
+  const csvText = initialData.sheetData.map(row => row.join(',')).join('\n');
+  const data = parseCsvToObjects(csvText);
+
+  return {
+    config: initialData.config,
+    data: data,
+  };
 }
