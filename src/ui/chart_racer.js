@@ -1,9 +1,10 @@
-import { categoryColors } from 'ui/config.js';
-
 export class ChartRacer {
-  constructor(config, data) {
+  // コンストラクタで categoryColors を受け取る
+  constructor(config, data, categoryColors) {
     this.config = config;
     this.data = data;
+    this.categoryColors = categoryColors; // プロパティとして保持
+    this.defaultColor = '#CCCCCC';      // デフォルト色を定義
     this.chart = null;
     this.stopped = true;
     this.timer = null;
@@ -57,7 +58,7 @@ export class ChartRacer {
       position: 'inside top right',
       layout: 'vertical',
       margin_top: 50,
-      customEntries: Object.keys(categoryColors).map(key => ({ name: key, icon: { color: categoryColors[key] } }))
+      customEntries: Object.keys(this.categoryColors).map(key => ({ name: key, icon: { color: this.categoryColors[key] } }))
     };
   }
 
@@ -109,7 +110,7 @@ export class ChartRacer {
         x: index,
         id: item.item,
         y: item[dateStr],
-        color: categoryColors[item.category]
+        color: this.categoryColors[item.category] || this.defaultColor
       }))
     }];
   }
