@@ -13,7 +13,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ChartRacer: () => (/* binding */ ChartRacer)
 /* harmony export */ });
-/* harmony import */ var _config_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config.js */ "./src/ui/config.js");
+/* harmony import */ var ui_config_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ui/config.js */ "./src/ui/config.js");
 
 
 class ChartRacer {
@@ -37,55 +37,77 @@ class ChartRacer {
       type: 'horizontal column solid',
       animation: { duration: 500 },
       margin: { top: 0, right: 50, bottom: 0, left: 0 },
-      yAxis: { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' },
-      xAxis: { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' },
-      title: { position: 'center', label: { margin_bottom: 40, text: this.config.title } },
-      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(this.config.startDate)) }, position: 'inside right' }],
-      legend: {
-        template: '%icon %name',
-        position: 'inside top right',
-        layout: 'vertical',
-        margin_top: 50,
-        customEntries: Object.keys(_config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors).map(key => ({ name: key, icon: { color: _config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors[key] } }))
-      },
       defaultPoint: { label_text: '%id: <b>%yvalue</b>' },
       defaultSeries: { legendEntry_visible: false, mouseTracking_enabled: false },
       series: this._makeSeries(),
-      toolbar: {
-        defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
-        items: {
-          startLabel: { type: 'label', label_text: new Date(this.config.startDate).getFullYear().toString() },
-          slider: {
-            type: 'range',
-            width: 240,
-            debounce: 200,
-            value: new Date(this.config.startDate).getTime(),
-            min: new Date(this.config.startDate).getTime(),
-            max: new Date(this.config.endDate).getTime(),
-            events_change: (val) => {
-              this._moveSlider(val);
-              this._playPause(true);
-            }
-          },
-          endLabel: { type: 'label', label_text: new Date(this.config.endDate).getFullYear().toString() },
-          Pause: {
-            type: 'option',
-            value: false,
-            width: 50,
-            margin: [6, 6, 6, 16],
-            icon_name: 'system/default/pause',
-            label_text: 'Pause',
-            events_change: () => {
-              this._playPause(!this.stopped);
-            }
-          }
-        }
-      }
+      annotations: [{ id: 'year', label: { text: this._formatAnnotation(new Date(this.config.startDate)) }, position: 'inside right' }],
+
+      // 設定をメソッド呼び出しに置き換え
+      title: this._buildTitleOptions(),
+      yAxis: this._buildYAxisOptions(),
+      xAxis: this._buildXAxisOptions(),
+      legend: this._buildLegendOptions(),
+      toolbar: this._buildToolbarOptions(),
     };
 
     this.chart = JSC.chart('chartDiv', chartOptions, (c) => {
       this._playPause(false, c);
     });
+  }
+
+  _buildTitleOptions() {
+    return { position: 'center', label: { margin_bottom: 40, text: this.config.title } };
+  }
+
+  _buildYAxisOptions() {
+    return { scale_range: { padding: 0.1, min: 0 }, orientation: 'opposite', overflow: 'hidden' };
+  }
+
+  _buildXAxisOptions() {
+    return { defaultTick_enabled: false, scale: { invert: true }, alternateGridFill: 'none' };
+  }
+
+  _buildLegendOptions() {
+    return {
+      template: '%icon %name',
+      position: 'inside top right',
+      layout: 'vertical',
+      margin_top: 50,
+      customEntries: Object.keys(ui_config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors).map(key => ({ name: key, icon: { color: ui_config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors[key] } }))
+    };
+  }
+
+  _buildToolbarOptions() {
+    return {
+      defaultItem: { position: 'inside top', offset: '0,-65', boxVisible: false, margin: 6 },
+      items: {
+        startLabel: { type: 'label', label_text: new Date(this.config.startDate).getFullYear().toString() },
+        slider: {
+          type: 'range',
+          width: 240,
+          debounce: 200,
+          value: new Date(this.config.startDate).getTime(),
+          min: new Date(this.config.startDate).getTime(),
+          max: new Date(this.config.endDate).getTime(),
+          events_change: (val) => {
+            this._moveSlider(val);
+            this._playPause(true);
+          }
+        },
+        endLabel: { type: 'label', label_text: new Date(this.config.endDate).getFullYear().toString() },
+        Pause: {
+          type: 'option',
+          value: false,
+          width: 50,
+          margin: [6, 6, 6, 16],
+          icon_name: 'system/default/pause',
+          label_text: 'Pause',
+          events_change: () => {
+            this._playPause(!this.stopped);
+          }
+        }
+      }
+    };
   }
 
   _makeSeries() {
@@ -103,7 +125,7 @@ class ChartRacer {
         x: index,
         id: item.item,
         y: item[dateStr],
-        color: _config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors[item.category]
+        color: ui_config_js__WEBPACK_IMPORTED_MODULE_0__.categoryColors[item.category]
       }))
     }];
   }
@@ -195,6 +217,7 @@ const categoryColors = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   fetchAndParseChartData: () => (/* binding */ fetchAndParseChartData),
 /* harmony export */   getChartInitialData: () => (/* binding */ getChartInitialData),
 /* harmony export */   parseCsvToObjects: () => (/* binding */ parseCsvToObjects)
 /* harmony export */ });
@@ -244,7 +267,6 @@ async function getChartInitialData() {
   return new Promise((resolve, reject) => {
     google.script.run
       .withSuccessHandler((initialData) => {
-        console.log("GASから初期データを受け取りました:", initialData);
         resolve(initialData);
       })
       .withFailureHandler((error) => {
@@ -254,6 +276,25 @@ async function getChartInitialData() {
       })
       .getChartInitialDataOperation();
   });
+}
+
+/**
+ * サーバーからデータを取得し、クライアントサイドで利用可能な形式に整形する
+ * @returns {Promise<{config: object, data: Array<Object>}>}
+ */
+async function fetchAndParseChartData() {
+  const initialData = await getChartInitialData();
+  if (!initialData || !initialData.config || !initialData.sheetData) {
+    throw new Error("Invalid initial data structure from server.");
+  }
+
+  const csvText = initialData.sheetData.map(row => row.join(',')).join('\n');
+  const data = parseCsvToObjects(csvText);
+
+  return {
+    config: initialData.config,
+    data: data,
+  };
 }
 
 
@@ -340,26 +381,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 window.addEventListener('load', async () => {
-  console.log("Fetching initial data...");
-  const initialData = await (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.getChartInitialData)();
-  console.log("Initial data received:", initialData);
-
-  // initialData とその中身を検証
-  if (!initialData || !initialData.config || !initialData.sheetData) {
-    console.error("Invalid initial data structure:", initialData);
-    return; // 処理を中断
+  try {
+    const { config, data } = await (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.fetchAndParseChartData)();
+    new _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__.ChartRacer(config, data).init();
+  } catch (error) {
+    console.error("Chart initialization failed:", error);
   }
-
-  const config = initialData.config;
-  const csvText = initialData.sheetData.map(row => row.join(',')).join('\n');
-  console.log("CSV text created:", csvText.substring(0, 100) + "..."); //長すぎないように一部だけ表示
-
-  const data = (0,_data_utils_js__WEBPACK_IMPORTED_MODULE_1__.parseCsvToObjects)(csvText);
-  console.log("Parsed data (first row):", data ? data[0] : null);
-
-  console.log("Initializing ChartRacer...");
-  new _chart_racer_js__WEBPACK_IMPORTED_MODULE_0__.ChartRacer(config, data).init();
-  console.log("ChartRacer initialized.");
 });
 })();
 
