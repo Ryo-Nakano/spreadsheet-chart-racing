@@ -81,29 +81,3 @@ export class BoundSheetData extends BaseSheetData {
     return this._SSID;
   }
 }
-
-/**
- * `BaseSheetData` クラスを継承し、EDIデータ変換ツール_マスターデータのデータ操作を提供するクラス。
- */
-export class MasterSheetData extends BaseSheetData {
-  /**
-   * EDIデータ変換ツール_マスターデータのスプレッドシートIDを返します。
-   * @return {string} スプレッドシートID
-   */
-  static get SSID() {
-    return '1LQohbUMHNFajVhcF5izRtIVmGraQqQWbglw5Ph-wLAU';
-  }
-}
-
-/**
- * `BaseSheetData` クラスを継承し、LTエラー例外受注一覧のデータ操作を提供するクラス。
- */
-export class LtErrorExceptionApprovedOrdersSheetData extends BaseSheetData {
-  /**
-   * LTエラー例外受注一覧のスプレッドシートIDを返します。
-   * @return {string} スプレッドシートID
-   */
-  static get SSID() {
-    return '1-vF6vNEfAYb4yH98mvnDPxL8q8g4LVFOLw5H69sbYK0';
-  }
-}

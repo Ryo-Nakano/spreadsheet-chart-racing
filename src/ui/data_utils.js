@@ -57,7 +57,7 @@ export async function getChartInitialData() {
 
 /**
  * サーバーからデータを取得し、クライアントサイドで利用可能な形式に整形する
- * @returns {Promise<{config: object, data: Array<Object>}>}
+ * @returns {Promise<{config: object, data: Array<Object>, categoryColors: object}>}
  */
 export async function fetchAndParseChartData() {
   const initialData = await getChartInitialData();
@@ -71,5 +71,6 @@ export async function fetchAndParseChartData() {
   return {
     config: initialData.config,
     data: data,
+    categoryColors: initialData.categoryColors,
   };
 }
