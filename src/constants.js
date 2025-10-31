@@ -1,10 +1,16 @@
 export const BOUND_SHEETS = {
   DATA: 'data',
   CONFIG: 'config',
+  CATEGORIES: 'categories',
 };
 
 export const NAMED_RANGES = {
-  BOUND_SHEETS: {},
+  BOUND_SHEETS: {
+    CATEGORIES: {
+      CATEGORY: 'CATEGORIES.CATEGORY',
+      COLOR: 'CATEGORIES.COLOR',
+    }
+  },
 };
 
 export const METHODS = {
