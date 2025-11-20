@@ -2,6 +2,7 @@ export const BOUND_SHEETS = {
   DATA: 'data',
   CONFIG: 'config',
   CATEGORIES: 'categories',
+  OPERATION: 'operation',
 };
 
 export const NAMED_RANGES = {
