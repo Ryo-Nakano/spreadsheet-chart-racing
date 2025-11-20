@@ -9,6 +9,11 @@ export const NAMED_RANGES = {
     CATEGORIES: {
       CATEGORY: 'CATEGORIES.CATEGORY',
       COLOR: 'CATEGORIES.COLOR',
+    },
+    CONFIG: {
+      KEY: 'CONFIG.KEY',
+      VALUE: 'CONFIG.VALUE',
+      MEMO: 'CONFIG.MEMO',
     }
   },
 };
