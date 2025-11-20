@@ -4,3 +4,4 @@ dist/main.js
 .env
 .clasp.json
 dist/chart.js
+dist/chart.js.html
