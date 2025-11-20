@@ -3,7 +3,7 @@ import { BOUND_SHEETS } from "constants";
 
 export class GetSheetDataOperation extends BaseOperation {
   _operation() {
-    const sheet = this._getSheet(BOUND_SHEETS.DATA);
+    const sheet = this._getSheet(BOUND_SHEETS.OPERATION);
     const data = sheet.getDataRange().getValues();
     return data;
   }
