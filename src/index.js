@@ -4,6 +4,7 @@ import { ShowChartModalOperation } from "operations/show_chart_modal_operation";
 import { GetSheetDataOperation } from "operations/get_sheet_data_operation";
 import { GetConfigOperation } from "operations/get_config_operation";
 import { GetCategoryColorsOperation } from "operations/get_category_colors_operation";
+import { TransformDataOperation } from "operations/transform_data_operation";
 
 global.TEST = () => {
   const operation = new TestOperation();
@@ -22,6 +23,11 @@ global.addTabFunctionsOperation = () => {
 
 global.showChartModalOperation = () => {
   const operation = new ShowChartModalOperation();
+  operation.run();
+};
+
+global.transformDataOperation = () => {
+  const operation = new TransformDataOperation();
   operation.run();
 };
 
