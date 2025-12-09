@@ -7,6 +7,12 @@ export const BOUND_SHEETS = {
 
 export const NAMED_RANGES = {
   BOUND_SHEETS: {
+    DATA: {
+      MONTH: 'DATA.MONTH',
+      CATEGORY: 'DATA.CATEGORY',
+      ITEM: 'DATA.ITEM',
+      QUANTITY: 'DATA.QUANTITY',
+    },
     CATEGORIES: {
       CATEGORY: 'CATEGORIES.CATEGORY',
       COLOR: 'CATEGORIES.COLOR',

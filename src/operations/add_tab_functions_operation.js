@@ -6,9 +6,15 @@ export class AddTabFunctionsOperation extends BaseOperation {
       name: 'ChartRacing を表示する',
       functionName: 'showChartModalOperation',
     });
+
+    const transformDataOperation = this._createTabFunction({
+      name: 'データの変換を実行',
+      functionName: 'transformDataOperation',
+    });
     
     this._getSpreadsheet().addMenu('カンタン操作', [
       showChartModalOperation,
+      transformDataOperation,
     ]);
   }
 
