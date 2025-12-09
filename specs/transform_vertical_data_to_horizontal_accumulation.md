@@ -13,27 +13,32 @@
     *   **サンプルデータ**:
         ```
         month       category     item      quantity
-        2025/01     category_A   item_A    10
-        2025/01     category_A   item_B    5
-        2025/01     category_B   item_C    10
-        2025/02     category_A   item_A    5
-        2025/02     category_A   item_B    10
-        2025/02     category_B   item_C    20
-        2025/03     category_A   item_A    5
-        2025/03     category_A   item_B    5
-        2025/03     category_B   item_C    10
-        2025/03     category_B   item_D    20
-        2025/04     category_A   item_A    10
-        2025/04     category_A   item_B    10
-        2025/04     category_B   item_C    20
-        2025/04     category_B   item_D    5
+        2025/01/01  category_A   item_A    10
+        2025/01/01  category_A   item_B    5
+        2025/01/01  category_B   item_C    10
+        2025/02/01  category_A   item_A    5
+        2025/02/01  category_A   item_B    10
+        2025/02/01  category_B   item_C    20
+        2025/03/01  category_A   item_A    5
+        2025/03/01  category_A   item_B    5
+        2025/03/01  category_B   item_C    10
+        2025/03/01  category_B   item_D    20
+        2025/04/01  category_A   item_A    10
+        2025/04/01  category_A   item_B    10
+        2025/04/01  category_B   item_C    20
+        2025/04/01  category_B   item_D    5
         ```
 
 2.  **処理ロジック詳細**
     *   **データの正規化と検証**:
         *   **Month (A列)**:
-            *   `Date`オブジェクト、および `yyyy/MM`, `yyyy/MM/dd`, `yyyy-MM-dd` 等の日付として解釈可能な文字列を広く許容。
-            *   全て `YYYY/MM/DD` 形式の文字列（日付は必ず `01` 日に丸める。例: "2025/01/15" → "2025/01/01"）に正規化して扱う。
+            *   `Date`オブジェクト、`yyyy/MM`形式、`yyyy/MM/dd`形式、`yyyy-MM-dd`形式など、日付として解釈可能な値を広く許容します。
+            *   全て `YYYY/MM/DD` 形式の文字列（日付は必ず `01` 日に丸める）に正規化して扱います。
+                *   例:
+                    *   `new Date(2025, 0, 15)` → `"2025/01/01"`
+                    *   `"2025/01/15"` → `"2025/01/01"`
+                    *   `"2025-01-15"` → `"2025/01/01"`
+                    *   `"2025/01"` → `"2025/01/01"`
             *   日付として解釈できない値が入っている行は**スキップ**する。
         *   **Category (B列) / Item (C列)**:
             *   前後の空白（トリム）を除去して扱う。
