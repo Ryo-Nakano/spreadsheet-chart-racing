@@ -1,43 +1,6 @@
 /**
- * 値を適切な型に変換する関数
- * @param {string} value - 値（文字列）
- * @return {any} - 適切な型に変換された値
- */
-function parseValue(value) {
-  if (!isNaN(value)) return Number(value); // 数値
-  if (value.toLowerCase() === 'true') return true; // 真偽値
-  if (value.toLowerCase() === 'false') return false; // 真偽値
-  const date = Date.parse(value);
-  if (!isNaN(date)) return new Date(date); // 日付
-  return value; // 文字列
-}
-
-/**
- * CSV文字列をパースし、オブジェクトの配列を返す関数
- * @param {string} csv - CSV形式の文字列
- * @param {string} [delimiter=','] - 区切り文字（デフォルトはカンマ）
- * @return {Array<Object>} - オブジェクトの配列
- */
-export function parseCsvToObjects(csv, delimiter = ',') {
-  const rows = csv.trim().split('\n').filter(row => row.trim());
-  if (rows.length < 2) throw new Error('Invalid CSV: Missing data rows');
-
-  const headers = rows[0].split(delimiter).map(header => header.trim());
-  return rows.slice(1).map(row => {
-    const values = row.split(delimiter).map(value => value.trim());
-    if (values.length !== headers.length) {
-      throw new Error(`Row does not match header count: ${row}`);
-    }
-    return headers.reduce((obj, header, index) => {
-      obj[header] = parseValue(values[index]);
-      return obj;
-    }, {});
-  });
-}
-
-/**
  * スプレッドシートから初期データ（シートデータと設定）を取得する
- * @returns {Promise<{sheetData: Array<Array<string>>, config: object}>}
+ * @returns {Promise<{sheetData: Array<Array<any>>, config: object}>}
  */
 export async function getChartInitialData() {
   // サーバー側からデータが返ってくるのを待つために Promise でラップ
@@ -48,10 +11,28 @@ export async function getChartInitialData() {
       })
       .withFailureHandler((error) => {
         console.error('初期データの取得に失敗しました。サーバーサイドでエラーが発生しました。');
-        console.error('エラー詳細:', error); // エラーオブジェクト全体を出力
+        console.error('エラー詳細:', error);
         reject(error);
       })
       .getChartInitialDataOperation();
+  });
+}
+
+/**
+ * 2次元配列（シートデータ）をオブジェクトの配列に変換する
+ * @param {Array<Array<any>>} sheetData - GASから取得した2次元配列
+ * @returns {Array<Object>} オブジェクトの配列
+ */
+export function parseSheetDataToObjects(sheetData) {
+  if (!sheetData || sheetData.length < 2) return [];
+
+  const headers = sheetData[0].map(h => String(h));
+
+  return sheetData.slice(1).map(row => {
+    return headers.reduce((obj, header, index) => {
+      obj[header] = row[index];
+      return obj;
+    }, {});
   });
 }
 
@@ -65,8 +46,20 @@ export async function fetchAndParseChartData() {
     throw new Error("Invalid initial data structure from server.");
   }
 
-  const csvText = initialData.sheetData.map(row => row.join(',')).join('\n');
-  const data = parseCsvToObjects(csvText);
+  const data = parseSheetDataToObjects(initialData.sheetData);
+
+  // データから日付カラムを自動検出し、期間を設定する
+  if (data.length > 0) {
+    const dateKeys = Object.keys(data[0]).filter(key => /^\d{4}\/\d{2}\/\d{2}$/.test(key));
+
+    if (dateKeys.length > 0) {
+      dateKeys.sort();
+      initialData.config.startDate = dateKeys[0];
+      initialData.config.endDate = dateKeys[dateKeys.length - 1];
+    } else {
+      console.warn('No date columns found in data header. Using existing config.');
+    }
+  }
 
   return {
     config: initialData.config,

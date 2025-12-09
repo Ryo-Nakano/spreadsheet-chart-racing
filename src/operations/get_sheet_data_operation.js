@@ -1,10 +1,8 @@
 import { BaseOperation } from "base_classes/base_operation";
-import { BOUND_SHEETS } from "constants";
+import { OperationSheetData } from "sheet_data/bound_sheet/operation_sheet_data";
 
 export class GetSheetDataOperation extends BaseOperation {
   _operation() {
-    const sheet = this._getSheet(BOUND_SHEETS.OPERATION);
-    const data = sheet.getDataRange().getValues();
-    return data;
+    return OperationSheetData.formattedAll;
   }
 }
